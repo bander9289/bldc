@@ -164,7 +164,11 @@ void app_uart_slcd3_stop(void) {
 }
 
 void app_uart_slcd3_configure(uint32_t baudrate) {
-	uart_cfg.speed = baudrate;
+	if (baudrate == 0) {
+		uart_cfg.speed = BAUDRATE;
+	} else {
+		uart_cfg.speed = baudrate;
+	}
 
 	if (is_running) {
 		uartStart(&HW_UART_DEV, &uart_cfg);

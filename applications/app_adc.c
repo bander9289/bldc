@@ -50,21 +50,29 @@ static volatile bool use_rx_tx_as_buttons = false;
 static volatile bool stop_now = true;
 static volatile bool is_running = false;
 
+// Externs
+void app_uart_slcd3_start(void);
+void app_uart_slcd3_stop(void);
+void app_uart_slcd3_configure(uint32_t baudrate);
+
 // 'live' variables - reset at power off, set at runtime by other code (i.e. custom apps)
 volatile float live_pedal_assist_multiplier = 1.0;
 
 void app_adc_configure(adc_config *conf) {
+	app_uart_slcd3_configure(0);
 	config = *conf;
 	ms_without_power = 0.0;
 }
 
 void app_adc_start(bool use_rx_tx) {
+	app_uart_slcd3_start();
 	use_rx_tx_as_buttons = use_rx_tx;
 	stop_now = false;
 	chThdCreateStatic(adc_thread_wa, sizeof(adc_thread_wa), NORMALPRIO, adc_thread, NULL);
 }
 
 void app_adc_stop(void) {
+	app_uart_slcd3_stop();
 	stop_now = true;
 	while (is_running) {
 		chThdSleepMilliseconds(1);
