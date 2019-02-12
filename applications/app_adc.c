@@ -50,6 +50,9 @@ static volatile bool use_rx_tx_as_buttons = false;
 static volatile bool stop_now = true;
 static volatile bool is_running = false;
 
+// 'live' variables - reset at power off, set at runtime by other code (i.e. custom apps)
+volatile float live_pedal_assist_multiplier = 1.0;
+
 void app_adc_configure(adc_config *conf) {
 	config = *conf;
 	ms_without_power = 0.0;
@@ -283,6 +286,9 @@ static THD_FUNCTION(adc_thread, arg) {
 		static systime_t last_time = 0;
 		static float pwr_ramp = 0.0;
 		const float ramp_time = fabsf(pwr) > fabsf(pwr_ramp) ? config.ramp_time_pos : config.ramp_time_neg;
+
+		// Apply live adjustment
+		pwr = pwr * live_pedal_assist_multiplier;
 
 		if (ramp_time > 0.01) {
 			const float ramp_step = (float)ST2MS(chVTTimeElapsedSinceX(last_time)) / (ramp_time * 1000.0);
